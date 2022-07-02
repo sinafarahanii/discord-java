@@ -96,7 +96,68 @@ public class UserHandler {
             }
         }
     }
-
+    private void groupList(){
+        try {
+            if (user.getServers().size() == 0) {
+                oos.writeObject(0);
+                return;
+            }
+            oos.writeObject(user.printServers());
+            int server=Integer.parseInt(String.valueOf(ois.readObject()));
+            if(server<0 || server>user.getServers().size()){
+                oos.writeObject(0);
+                return;
+            }
+            else if(server==0){
+                return;
+            }
+            int command=Integer.parseInt(String.valueOf(ois.readObject()));
+            if(command==0){
+                return;
+            }
+            else if(command==1){
+                oos.writeObject(user.getServers().get(server-1).printUsersList());
+                return;
+            }
+            else if(command==2){
+                oos.writeObject(user.getServers().get(server-1).printChannels());
+                int channel=Integer.parseInt(String.valueOf(ois.readObject()));
+                if(channel==0){
+                    return;
+                }else if(channel<0 || channel>user.getServers().get(server).getChannels().size()){
+                    oos.writeObject(0);
+                }else{
+                    if(user.getServers().get(server-1).getChannels().get(channel-1).getType().equals(Type.Text)) {
+                        oos.writeObject(user.viewChannelChat(user.getServers().get(server - 1), channel - 1));
+                        while (true) {
+                            if (!((boolean) ois.readObject())) {
+                                ReadAndWriteUsers.newReadAndWriteUsers().updateUser(user);
+                                ReadAndWriteUsers.newReadAndWriteUsers().updateUser(user.getFriendList().get(command - 1));
+                                return;
+                            }
+                            user.getServers().get(server-1).addToChat(channel-1).addMessage(new Message(user,String.valueOf(ois.readObject())));
+                        }
+                    }else{
+                    }
+                }
+            }else if(command==3){
+                int setting=Integer.parseInt(String.valueOf(ois.readObject()));
+                if(setting==0){
+                    return;
+                }else if(setting==1){
+                    User addedPerson=ReadAndWriteUsers.newReadAndWriteUsers().findUser(String.valueOf(ois.readObject()));
+                    if(addedPerson!=null) {
+                        user.getServers().get(server - 1).addUser(addedPerson);
+                        oos.writeObject(true);
+                    }else{
+                        oos.writeObject(false);
+                    }
+                }
+            }
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
 
     private void viewFriendRequests() throws IOException {
         while (true) {

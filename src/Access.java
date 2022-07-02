@@ -1,4 +1,5 @@
 public class Access {
+    private String role;
     private boolean canCreatChannel;
     private boolean canRemoveChannel;
     private boolean canRemoveUser;
@@ -6,6 +7,17 @@ public class Access {
     private boolean canLimitAccessToChannel;
     private boolean canLimitUser;
     private boolean canPinMassage;
+
+    public Access(String role, boolean canCreatChannel, boolean canRemoveChannel, boolean canRemoveUser, boolean canChangeServerName, boolean canLimitAccessToChannel, boolean canLimitUser, boolean canPinMassage) {
+        this.role = role;
+        this.canCreatChannel = canCreatChannel;
+        this.canRemoveChannel = canRemoveChannel;
+        this.canRemoveUser = canRemoveUser;
+        this.canChangeServerName = canChangeServerName;
+        this.canLimitAccessToChannel = canLimitAccessToChannel;
+        this.canLimitUser = canLimitUser;
+        this.canPinMassage = canPinMassage;
+    }
 
     public boolean isCanCreatChannel() {
         return canCreatChannel;

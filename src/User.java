@@ -160,8 +160,22 @@ public  class  User implements Serializable {
     public String viewChat(User user) {
         return friendList.get(user).toString();
     }
-
+    public String viewChannelChat(Server server,int channel){
+        return server.getChannels().get(channel).toString();
+    }
     public Chats addToChat(User user) {
         return friendList.get(user);
+    }
+    public ArrayList<Server> getServers() {
+        return servers;
+    }
+    public String printServers(){
+        String output="";
+        int index=1;
+        for(Server s:servers){
+            output+=index+"."+s.getName();
+            index++;
+        }
+        return output;
     }
 }
