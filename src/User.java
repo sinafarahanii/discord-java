@@ -21,11 +21,16 @@ public  class  User implements Serializable {
     private String password;
     private String email;
     private String phoneNumber;
-    protected boolean state = false;
+    private boolean statusSet = false;
+    private boolean state = false;
     public User(String userName, String password, String email) {
         this.userName=userName;
         this.password=password;
         this.email=email;
+    }
+
+    public boolean isStatusSet(){
+        return statusSet;
     }
 
     public User(String userName, String password, String email, String phoneNumber) {
@@ -37,14 +42,29 @@ public  class  User implements Serializable {
 
     public void online(){
         state = true;
+        try {
+            ReadAndWriteUsers.newReadAndWriteUsers().updateUser(this);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
     public void offline(){
         state=false;
+        try {
+            ReadAndWriteUsers.newReadAndWriteUsers().updateUser(this);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
     }
     public void changeStatus(int command) throws IOException, ClassNotFoundException {
         if (command == 0)
             return;
+        statusSet = true;
         if (command == 1)
             status = Status.Online;
         if (command == 2)
@@ -53,6 +73,8 @@ public  class  User implements Serializable {
             status = Status.Invisible;
         if (command == 4)
             status = Status.DoNotDisturb;
+        if(command==5 )
+            statusSet=false;
         ReadAndWriteUsers.newReadAndWriteUsers().updateUser(this);
     }
 
@@ -107,13 +129,15 @@ public  class  User implements Serializable {
         ArrayList<User> friends = new ArrayList<User>(keySet);
         return friends;
     }
-    public boolean state(){
+
+    public boolean isState(){
         return state;
     }
 
     public Status getStatus() {
         return status;
     }
+
     public void receiveNewFriendRequest(FriendRequest newFriendRequest) throws IOException, ClassNotFoundException {
         boolean spam = false;
         for(int i = 0;i<friendRequests.size();i++)
@@ -139,9 +163,13 @@ public  class  User implements Serializable {
         ArrayList<User> friends = new ArrayList<User>(keySet);
         for(User user:(friends)){
             outPut+=((String) (CYAN+index+"."+user.getUserName()+" :"+RESET));
-            if(!user.state()){
+            if(!user.isStatusSet() && !user.isState()){
                 outPut+=((String) (BRIGHT_BLACK+"offline"+RESET+"\n"));
-            }else if(user.state()){
+            }
+            else if(!user.isStatusSet()){
+                outPut+=((String) (GREEN+"online"+RESET+"\n"));
+            }
+            else if(user.isState()){
                 if(user.getStatus().equals(Status.Online)){
                     outPut+=((String) (GREEN+"online"+RESET+"\n"));
                 }else if(user.getStatus().equals(Status.Idle)){
@@ -160,22 +188,34 @@ public  class  User implements Serializable {
     public String viewChat(User user) {
         return friendList.get(user).toString();
     }
+
     public String viewChannelChat(Server server,int channel){
         return server.getChannels().get(channel).toString();
     }
+
     public Chats addToChat(User user) {
         return friendList.get(user);
     }
+
     public ArrayList<Server> getServers() {
         return servers;
     }
+
+    public void addServer(Server server){
+        servers.add(server);
+    }
+
     public String printServers(){
-        String output="";
+        String output="0. Return\n";
         int index=1;
         for(Server s:servers){
-            output+=index+"."+s.getName();
+            output+=index+"."+s.getName()+"\n";
             index++;
         }
         return output;
+    }
+
+    public void removeServer(Server server) {
+        servers.remove(server);
     }
 }

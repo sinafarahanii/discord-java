@@ -19,44 +19,38 @@ public class UserHandler {
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
+        System.out.println("User "+user.getUserName()+" went offline.");
         user.offline();
     }
 
     private void firstMenu() throws IOException, ClassNotFoundException {
         while(true){
-            int command = 0;
-            try {
-                command = Integer.parseInt((String.valueOf( ois.readObject())));
-            } catch (IOException | ClassNotFoundException e) {
-                e.printStackTrace();
+            String command;
+            command =((String.valueOf( ois.readObject())));
+            if(command.equals("1")){
+                friendListBusiness();
+            }else if(command.equals("2")){
+                groupList();
             }
-            if(command==1){
-                try {
-                    friendListBusiness();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }else if(command==2){
-
-            }
-            else if(command==4){
+            else if(command.equals("4")){
                 sendFriendRequest();
             }
-            else if(command==3){
-                try {
-                    viewFriendRequests();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+            else if(command.equals("3")){
+                viewFriendRequests();
             }
-            else if(command==5){
+            else if(command.equals("5")){
                 setting();
+                continue;
             }
-            else if(command==6){
+            else if(command.equals("6")){
+                creatServer();
+                continue;
+            }
+            else if(command.equals("7"))
                 break;
-            }
         }
     }
+
 
     private void friendListBusiness() throws IOException, ClassNotFoundException {
         if(user.getFriendList().size()==0) {
@@ -78,7 +72,7 @@ public class UserHandler {
         if(command2==0)
             return;
         else if(command2==1){
-
+            return;
         }
         else{
             oos.writeObject(user.viewChat(user.getFriendList().get(command-1)));
@@ -96,64 +90,27 @@ public class UserHandler {
             }
         }
     }
+
+
     private void groupList(){
         try {
             if (user.getServers().size() == 0) {
                 oos.writeObject(0);
                 return;
             }
+            oos.writeObject(1);
             oos.writeObject(user.printServers());
             int server=Integer.parseInt(String.valueOf(ois.readObject()));
             if(server<0 || server>user.getServers().size()){
                 oos.writeObject(0);
                 return;
             }
-            else if(server==0){
+            oos.writeObject(1);
+            if(server==0){
                 return;
             }
-            int command=Integer.parseInt(String.valueOf(ois.readObject()));
-            if(command==0){
-                return;
-            }
-            else if(command==1){
-                oos.writeObject(user.getServers().get(server-1).printUsersList());
-                return;
-            }
-            else if(command==2){
-                oos.writeObject(user.getServers().get(server-1).printChannels());
-                int channel=Integer.parseInt(String.valueOf(ois.readObject()));
-                if(channel==0){
-                    return;
-                }else if(channel<0 || channel>user.getServers().get(server).getChannels().size()){
-                    oos.writeObject(0);
-                }else{
-                    if(user.getServers().get(server-1).getChannels().get(channel-1).getType().equals(Type.Text)) {
-                        oos.writeObject(user.viewChannelChat(user.getServers().get(server - 1), channel - 1));
-                        while (true) {
-                            if (!((boolean) ois.readObject())) {
-                                ReadAndWriteUsers.newReadAndWriteUsers().updateUser(user);
-                                ReadAndWriteUsers.newReadAndWriteUsers().updateUser(user.getFriendList().get(command - 1));
-                                return;
-                            }
-                            user.getServers().get(server-1).addToChat(channel-1).addMessage(new Message(user,String.valueOf(ois.readObject())));
-                        }
-                    }else{
-                    }
-                }
-            }else if(command==3){
-                int setting=Integer.parseInt(String.valueOf(ois.readObject()));
-                if(setting==0){
-                    return;
-                }else if(setting==1){
-                    User addedPerson=ReadAndWriteUsers.newReadAndWriteUsers().findUser(String.valueOf(ois.readObject()));
-                    if(addedPerson!=null) {
-                        user.getServers().get(server - 1).addUser(addedPerson);
-                        oos.writeObject(true);
-                    }else{
-                        oos.writeObject(false);
-                    }
-                }
-            }
+            ServerHandler serverHandler = new ServerHandler(oos,ois,user,user.getServers().get(server-1));
+            ReadAndWriteUsers.newReadAndWriteUsers().updateUser(user);
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }
@@ -220,20 +177,30 @@ public class UserHandler {
     private void setting() throws IOException, ClassNotFoundException {
         while (true){
             try {
-                int command = Integer.parseInt(String.valueOf(ois.readObject()));
-                if (command == 0)
+                String command = (String.valueOf(ois.readObject()));
+                if (command.equals("0"))
                     return;
-                else if (command == 1) {
+                else if (command.equals("1")) {
                     changeStatus();
-                } else if (command == 2) {
+                    return;
+                } else if (command.equals("2")) {
                     changePassword();
-                } else if (command == 3) {
+                    return;
+                } else if (command.equals("3")) {
                     changeImage();
+                    return;
                 }
-            } catch (NumberFormatException | IOException | ClassNotFoundException e) {
+            } catch ( IOException e) {
                 return;
             }
         }
+    }
+
+    private void creatServer() throws IOException, ClassNotFoundException {
+        String serverName = String.valueOf(ois.readObject());
+        Server server = new Server(user,serverName);
+        user.addServer(server);
+        ReadAndWriteUsers.newReadAndWriteUsers().updateUser(user);
     }
 
     private void changeStatus() {

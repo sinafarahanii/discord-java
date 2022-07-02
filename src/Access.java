@@ -1,4 +1,6 @@
-public class Access {
+import java.io.Serializable;
+
+public class Access implements Serializable {
     private String role;
     private boolean canCreatChannel;
     private boolean canRemoveChannel;
@@ -18,7 +20,13 @@ public class Access {
         this.canLimitUser = canLimitUser;
         this.canPinMassage = canPinMassage;
     }
+    public String getRole(){
+        return role;
+    }
 
+    public void setRole(String role){
+        this.role = role;
+    }
     public boolean isCanCreatChannel() {
         return canCreatChannel;
     }
